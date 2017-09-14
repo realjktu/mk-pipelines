@@ -30,7 +30,8 @@ def aa="2017-08-30"
 //Date creationDate1 = Date.parse("yyyy-MM-dd", aa)
 //Date creationDate1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(aa)
 //def newDate= Date.parse("yyyy-MM-dd", aa).format('MM/dd/YYYY')
-dd=new Date().parse('yyyy/MM/dd', '1973/07/21')
+//Date dd=new Date()
+//dd.parse('yyyy/MM/dd', '1973/07/21')
 
 node ('python') {
     try {
