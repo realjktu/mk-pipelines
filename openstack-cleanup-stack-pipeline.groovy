@@ -22,7 +22,7 @@
 
 openstack = new com.mirantis.mk.Openstack()
 common = new com.mirantis.mk.Common()
-import java.text.SimpleDateFormat
+//import java.text.SimpleDateFormat
 
 node ('python') {
     try {
@@ -52,7 +52,8 @@ node ('python') {
                 //println stackInfo
                 common.infoMsg("Stack: "+stackName+" Creation time: "+ stackInfo.creation_time)
             
-                Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(stackInfo.creation_time.trim())
+                //Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(stackInfo.creation_time.trim())
+		Date creationDate = Date.parse("yyyy-MM-dd'T'HH:mm:ss'Z'", stackInfo.creation_time)
                 long creationTimestamp = (long) creationDate.getTime()/1000
                 def diff = currentTimestamp-creationTimestamp
                 def retentionSec = 	Integer.parseInt(RETENTION_DAYS)*86400
