@@ -24,6 +24,10 @@ openstack = new com.mirantis.mk.Openstack()
 common = new com.mirantis.mk.Common()
 //import java.text.SimpleDateFormat
 
+def aa="2017-08-30T09:05:08Z"
+Date creationDate = new Date().parse("yyyy-MM-dd'T'HH:mm:ss'Z'", aa)
+
+
 node ('python') {
     try {
         stage('Looking for stacks to be deleted') {
