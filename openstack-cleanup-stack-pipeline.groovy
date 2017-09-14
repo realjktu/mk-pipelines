@@ -19,7 +19,7 @@
  */
 
 
-Date t1=new Date()
+java.util.Date t1=new java.util.Date()
 t1.parse('yyyy/MM/dd', '1973/07/21')
 
 openstack = new com.mirantis.mk.Openstack()
