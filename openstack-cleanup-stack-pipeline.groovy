@@ -26,7 +26,7 @@ import java.text.SimpleDateFormat
 
 def aa="2017-08-30"
 //Date creationDate1 = Date.parse("yyyy-MM-dd", aa)
-Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(aa)
+Date creationDate1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(aa)
 
 
 node ('python') {
