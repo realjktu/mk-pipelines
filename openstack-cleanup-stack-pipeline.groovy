@@ -19,25 +19,11 @@
  */
 
 
-//java.util.Date t1=new java.util.Date()
-//import java.util.Date
-//t1=new Date()
-t1=Date.parse('MM/dd/YYYY', '2017-08-30T09:05:08Z')
-
 
 openstack = new com.mirantis.mk.Openstack()
 common = new com.mirantis.mk.Common()
-//import java.text.SimpleDateFormat
-//import java.util.Date 
+import java.text.SimpleDateFormat
 
-def aa="2017-08-30"
-//Date creationDate1 = Date.parse("yyyy-MM-dd", aa)
-//Date creationDate1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(aa)
-//def newDate= Date.parse("yyyy-MM-dd", aa).format('MM/dd/YYYY')
-//Date dd=new Date()
-//dd.parse('yyyy/MM/dd', '1973/07/21')
-
-println "t1"
 node ('python') {
     try {
         stage('Looking for stacks to be deleted') {
@@ -59,17 +45,15 @@ node ('python') {
             }
             common.infoMsg("Found "+existingStacks.size()+" stacks")
             // Check each stack
-//            long currentTimestamp = (long) new Date().getTime()/1000;
-long currentTimestamp=11111
+            long currentTimestamp = (long) new Date().getTime()/1000;
             for(def i=0;i<existingStacks.size();i++){
                 def stackName = existingStacks.get(i)
                 def stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
                 //println stackInfo
                 common.infoMsg("Stack: "+stackName+" Creation time: "+ stackInfo.creation_time)
             
-                //Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(stackInfo.creation_time.trim())
+                Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(stackInfo.creation_time.trim())
 		//Date creationDate = new Date().parse("yyyy-MM-dd'T'HH:mm:ss'Z'", stackInfo.creation_time)
-                Date creationDate = stackInfo.creation_time
                 long creationTimestamp = (long) creationDate.getTime()/1000
                 def diff = currentTimestamp-creationTimestamp
                 def retentionSec = 	Integer.parseInt(RETENTION_DAYS)*86400
