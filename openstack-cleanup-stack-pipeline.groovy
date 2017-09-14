@@ -48,7 +48,7 @@ node ('python') {
                 def stackName = existingStacks.get(i)
                 def stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
                 //println stackInfo
-                common.infoMsg("Stack: "+stackName+" Creation time: "+ stackInfo.creation_time)
+                println "Stack: "+stackName+" Creation time: "+ stackInfo.creation_time
             
                 Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(stackInfo.creation_time.trim())
 		//Date creationDate = new Date().parse("yyyy-MM-dd'T'HH:mm:ss'Z'", stackInfo.creation_time)
