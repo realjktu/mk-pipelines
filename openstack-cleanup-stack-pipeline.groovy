@@ -23,6 +23,7 @@
 openstack = new com.mirantis.mk.Openstack()
 common = new com.mirantis.mk.Common()
 //import java.text.SimpleDateFormat
+import java.util.Date 
 
 def aa="2017-08-30"
 //Date creationDate1 = Date.parse("yyyy-MM-dd", aa)
