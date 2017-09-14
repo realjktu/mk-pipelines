@@ -40,21 +40,22 @@ node ('python') {
             for (def i=0; i < jobNames.size(); i++){
                 existingStacks.addAll(openstack.getStacksForNameContains(openstackCloud, jobNames.get(i), venv))
             }
-            println "Found " + existingStacks.size() + " stacks"
+            println 'Found ' + existingStacks.size() + ' stacks'
             // Check each stack
-            long currentTimestamp = (long) new Date().getTime() / 1000;
-            for(def i=0;i<existingStacks.size();i++){
+            def  toSeconds = 1000
+            long currentTimestamp = (long) new Date().getTime() / toSeconds
+            for (def i=0; i < existingStacks.size(); i++){
                 def stackName = existingStacks.get(i)
                 def stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
                 //println stackInfo
-                println "Stack: " + stackName + " Creation time: " + stackInfo.creation_time
+                println 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time
                 Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).parse(stackInfo.creation_time.trim())
-		//Date creationDate = new Date().parse("yyyy-MM-dd'T'HH:mm:ss'Z'", stackInfo.creation_time)
-                long creationTimestamp = (long) creationDate.getTime() / 1000
-                def diff = currentTimestamp-creationTimestamp
+                //Date creationDate = new Date().parse("yyyy-MM-dd'T'HH:mm:ss'Z'", stackInfo.creation_time)
+                long creationTimestamp = (long) creationDate.getTime() / toSeconds
+                def diff = currentTimestamp - creationTimestamp
                 def retentionSec = Integer.parseInt(RETENTION_DAYS) * 86400
                 if (diff > retentionSec){
-                    println stackName + " stack have to be deleted"
+                    println stackName + ' stack have to be deleted'
                     //ooopenstack.deleteHeatStack(openstackCloud, stackName, venv)
                 }
             }
@@ -63,7 +64,4 @@ node ('python') {
         currentBuild.result = 'FAILURE'
         throw e
     }
-    
-    
-    
 }
