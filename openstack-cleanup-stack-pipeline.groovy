@@ -22,7 +22,7 @@
 //java.util.Date t1=new java.util.Date()
 //import java.util.Date
 t1=new Date()
-t1.parse('1973/07/21')
+t1.parse('2017-08-30T09:05:08Z')
 
 
 openstack = new com.mirantis.mk.Openstack()
