@@ -19,8 +19,9 @@
  */
 
 
-java.util.Date t1=new java.util.Date()
-t1.parse('yyyy/MM/dd', '1973/07/21')
+//java.util.Date t1=new java.util.Date()
+
+t1=Date().parse('yyyy/MM/dd', '1973/07/21')
 
 openstack = new com.mirantis.mk.Openstack()
 common = new com.mirantis.mk.Common()
@@ -55,7 +56,8 @@ node ('python') {
             }
             common.infoMsg("Found "+existingStacks.size()+" stacks")
             // Check each stack
-            long currentTimestamp = (long) new Date().getTime()/1000;
+//            long currentTimestamp = (long) new Date().getTime()/1000;
+long currentTimestamp=11111
             for(def i=0;i<existingStacks.size();i++){
                 def stackName = existingStacks.get(i)
                 def stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
