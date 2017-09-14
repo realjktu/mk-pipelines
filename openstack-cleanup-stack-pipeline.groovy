@@ -21,7 +21,7 @@
 
 //java.util.Date t1=new java.util.Date()
 
-t1=Date().parse('yyyy/MM/dd', '1973/07/21')
+t1=date().parse('yyyy/MM/dd', '1973/07/21')
 
 openstack = new com.mirantis.mk.Openstack()
 common = new com.mirantis.mk.Common()
