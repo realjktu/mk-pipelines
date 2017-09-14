@@ -22,11 +22,12 @@
 
 openstack = new com.mirantis.mk.Openstack()
 common = new com.mirantis.mk.Common()
-import java.text.SimpleDateFormat
+//import java.text.SimpleDateFormat
 
 def aa="2017-08-30"
 //Date creationDate1 = Date.parse("yyyy-MM-dd", aa)
-Date creationDate1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(aa)
+//Date creationDate1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'").parse(aa)
+def newDate= Date.parse("yyyy-MM-dd", aa).format('MM/dd/YYYY')
 
 
 node ('python') {
