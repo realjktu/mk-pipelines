@@ -34,10 +34,10 @@ node ('python') {
                 OPENSTACK_API_PROJECT_ID, OPENSTACK_API_USER_DOMAIN,
                 OPENSTACK_API_VERSION)
             openstack.getKeystoneToken(openstackCloud, venv)
-            String[] jobNames = JOBS_lIST.tokenize(',')
+            def jobNames = JOBS_lIST.tokenize(',')
             ArrayList<String> existingStacks = []
             // Get list of stacks
-            for (def i=0; i < jobNames.size; i++){
+            for (def i=0; i < jobNames.size(); i++){
                 existingStacks.addAll(openstack.getStacksForNameContains(openstackCloud, jobNames.get(i), venv))
             }
             println "Found " + existingStacks.size() + " stacks"
