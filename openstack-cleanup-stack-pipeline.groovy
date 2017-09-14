@@ -25,7 +25,7 @@ common = new com.mirantis.mk.Common()
 //import java.text.SimpleDateFormat
 
 def aa="2017-08-30"
-Date creationDate1 = new Date().parse("yyyy-MM-dd", aa)
+Date creationDate1 = Date.parse("yyyy-MM-dd", aa)
 
 
 node ('python') {
