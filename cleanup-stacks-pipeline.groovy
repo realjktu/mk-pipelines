@@ -37,15 +37,14 @@ node ('python') {
             def jobNames = JOBS_lIST.tokenize(',')
             ArrayList<String> existingStacks = []
             // Get list of stacks
-            for (def i=0; i < jobNames.size(); i++){
-                existingStacks.addAll(openstack.getStacksForNameContains(openstackCloud, jobNames.get(i), venv))
+            for (jobName in jobNames){
+                existingStacks.addAll(openstack.getStacksForNameContains(openstackCloud, jobName, venv))
             }
             println 'Found ' + existingStacks.size() + ' stacks'
             // Check each stack
             def  toSeconds = 1000
             long currentTimestamp = (long) new Date().getTime() / toSeconds
-            for (def i=0; i < existingStacks.size(); i++){
-                def stackName = existingStacks.get(i)
+            for (stackName in existingStacks){
                 def stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
                 //println stackInfo
                 println 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time
@@ -56,7 +55,7 @@ node ('python') {
                 def retentionSec = Integer.parseInt(RETENTION_DAYS) * 86400
                 if (diff > retentionSec){
                     println stackName + ' stack have to be deleted'
-                    //ooopenstack.deleteHeatStack(openstackCloud, stackName, venv)
+                    //ooooopenstack.deleteHeatStack(openstackCloud, stackName, venv)
                 }
             }
         }
