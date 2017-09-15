@@ -34,7 +34,7 @@ node ('python') {
                 OPENSTACK_API_PROJECT_ID, OPENSTACK_API_USER_DOMAIN,
                 OPENSTACK_API_VERSION)
             openstack.getKeystoneToken(openstackCloud, venv)
-            def jobNames = JOBS_lIST.tokenize(',')
+            def jobNames = JOBS_LIST.tokenize(',')
             ArrayList<String> existingStacks = []
             // Get list of stacks
             for (jobName in jobNames){
