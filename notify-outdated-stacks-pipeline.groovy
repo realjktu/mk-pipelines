@@ -64,6 +64,7 @@ node ('python') {
                     }
                 }
             }
+        }
         stage('Sending emails') {
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 String user_name = entry.getKey();
