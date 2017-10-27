@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat
 
 node ('python') {
     try {
+        HashMap<String, String> outdatedStacks = new HashMap<String, String>()
         stage('Looking for outdated stacks') {
             venv = "${env.WORKSPACE}/venv"
             openstack.setupOpenstackVirtualenv(venv, OPENSTACK_API_CLIENT)
@@ -36,7 +37,6 @@ node ('python') {
             openstack.getKeystoneToken(openstackCloud, venv)
             def jobNames = JOBS_LIST.tokenize(',')
             ArrayList<String> existingStacks = []
-            HashMap<String, String> outdatedStacks = new HashMap<String, String>()
             // Get list of stacks
             for (jobName in jobNames){
                 existingStacks.addAll(openstack.getStacksForNameContains(openstackCloud, jobName, venv))
@@ -66,7 +66,7 @@ node ('python') {
             }
         }
         stage('Sending emails') {
-            for (Map.Entry<String, String> entry : map.entrySet()) {
+            for (Map.Entry<String, String> entry : outdatedStacks.entrySet()) {
                 String user_name = entry.getKey();
                 String stacks = entry.getValue();
                 println user_name+': '+stacks
