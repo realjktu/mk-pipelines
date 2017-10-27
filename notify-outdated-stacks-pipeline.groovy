@@ -56,7 +56,7 @@ node ('python') {
                 def retentionSec = Integer.parseInt(RETENTION_DAYS) * 86400
                 if (diff > retentionSec){
                     println stackName + ' stack is outdated'
-                    String user_name = stackName.split('_')[0]                 
+                    String user_name = stackName.split('-')[0]                 
                     if (outdatedStacks.containsKey(user_name)){
                         outdatedStacks.put(user_name, outdatedStacks.get(user_name)+stackName+' Creation time: '+stackInfo.creation_time+'\n')
                     } else {
