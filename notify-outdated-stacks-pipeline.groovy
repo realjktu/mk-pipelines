@@ -36,6 +36,7 @@ node ('python') {
             openstack.getKeystoneToken(openstackCloud, venv)
             def jobNames = JOBS_LIST.tokenize(',')
             ArrayList<String> existingStacks = []
+            HashMap<String, String> outdatedStacks = new HashMap<String, String>()
             // Get list of stacks
             for (jobName in jobNames){
                 existingStacks.addAll(openstack.getStacksForNameContains(openstackCloud, jobName, venv))
@@ -55,10 +56,23 @@ node ('python') {
                 def retentionSec = Integer.parseInt(RETENTION_DAYS) * 86400
                 if (diff > retentionSec){
                     println stackName + ' stack is outdated'
-                    
+                    String user_name = stackName.split('_')[0]                 
+                    if (outdatedStacks.containsKey(user_name)){
+                        outdatedStacks.put(user_name, outdatedStacks.get(user_name)+stackName+' Creation time: '+stackInfo.creation_time+'\n')
+                    } else {
+                        outdatedStacks.put(user_name, stackName+' Creation time: '+stackInfo.creation_time+'\n')
+                    }
                 }
             }
-        }
+        stage('Sending emails') {
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                String user_name = entry.getKey();
+                String stacks = entry.getValue();
+                println user_name+': '+stacks
+                println '--------------------------------------------------'
+
+
+            }
     } catch (Exception e) {
         currentBuild.result = 'FAILURE'
         throw e
