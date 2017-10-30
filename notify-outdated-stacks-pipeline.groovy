@@ -58,9 +58,10 @@ node ('python') {
                 if (diff > retentionSec){
                     println stackName + ' stack is outdated'
                     String user_name = stackName.split('-')[0]                 
-                    String stackDetails='<' + stackLink + '|' + stackName + '> Created at: ' + stackInfo.creation_time.replace('Z', '').replace('T', ' ') + '\n'
+                    //String stackDetails='<' + stackLink + '|' + stackName + '> Created at: ' + stackInfo.creation_time.replace('Z', '').replace('T', ' ') + '\n'
+                    String stackDetails='{"title":"' + stackName + '", "title_link": "' + stackLink + '", "footer": "Created at: ' + stackInfo.creation_time.replace('Z', '').replace('T', ' ') + '"}'
                     if (outdatedStacks.containsKey(user_name)){
-                        outdatedStacks.put(user_name, outdatedStacks.get(user_name) + stackDetails)
+                        outdatedStacks.put(user_name, outdatedStacks.get(user_name) + ',' + stackDetails)
                     } else {
                         outdatedStacks.put(user_name, stackDetails)
                     }
@@ -71,10 +72,10 @@ node ('python') {
             for (Map.Entry<String, String> entry : outdatedStacks.entrySet()) {
                 String user_name = entry.getKey();
                 String stacks = entry.getValue();
-                String msg = "Hi @" + user_name + "! Please consider to delete the following "+OPENSTACK_API_PROJECT+" stacks: \n" + stacks
+                String msg = '{"text": "Hi @' + user_name + '! Please consider to delete the following '+OPENSTACK_API_PROJECT+' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
                 println msg
                 println '--------------------------------------------------'        
-                sh 'curl -X POST -H \'Content-type: application/json\' --data \'{"text":"'+msg+'"}\' '+SLACK_API_URL
+                sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + \'' + SLACK_API_URL
 
 
 
