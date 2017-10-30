@@ -1,6 +1,6 @@
 /**
  *
- * Delete stacks by Jenkins job name after retention period
+ * Delete stacks by Stack name after retention period
  *
  * Expected parameters:
  *   OPENSTACK_API_URL             OpenStack API address
@@ -13,7 +13,7 @@
  *   OPENSTACK_API_USER_DOMAIN     OpenStack user domain
  *
  *   RETENTION_DAYS                Days to delete stacks after creation
- *   JOBS_LIST                     Jenkins comma separated job names list to inspect outdated stacks
+ *   STACK_NAMES_LIST              Stacks names comma separated list to inspect outdated stacks
  *
  *
  */
@@ -25,7 +25,7 @@ import java.text.SimpleDateFormat
 
 node ('python') {
     try {
-        stage('Looking for outdated stacks') {
+        stage('Looking for stacks to be deleted') {
             venv = "${env.WORKSPACE}/venv"
             openstack.setupOpenstackVirtualenv(venv, OPENSTACK_API_CLIENT)
             openstackCloud = openstack.createOpenstackEnv(
@@ -34,7 +34,7 @@ node ('python') {
                 OPENSTACK_API_PROJECT_ID, OPENSTACK_API_USER_DOMAIN,
                 OPENSTACK_API_VERSION)
             openstack.getKeystoneToken(openstackCloud, venv)
-            def jobNames = JOBS_LIST.tokenize(',')
+            def jobNames = STACK_NAMES_LIST.tokenize(',')
             ArrayList<String> existingStacks = []
             // Get list of stacks
             for (jobName in jobNames){
@@ -54,8 +54,12 @@ node ('python') {
                 def diff = currentTimestamp - creationTimestamp
                 def retentionSec = Integer.parseInt(RETENTION_DAYS) * 86400
                 if (diff > retentionSec){
-                    println stackName + ' stack is outdated'
-                    
+                    println stackName + ' stack have to be deleted'
+                    if (DRY_RUN.toBoolean() == true)
+                        println "Dry run mode. No real deleting"
+                    else
+                        println "DELETE!!!" + stackName
+                        //oooopenstack.deleteHeatStack(openstackCloud, stackName, venv)                    
                 }
             }
         }
