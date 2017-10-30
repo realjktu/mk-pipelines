@@ -75,7 +75,7 @@ node ('python') {
                 String msg = '{"text": "Hi @' + user_name + '! Please consider to delete the following '+OPENSTACK_API_PROJECT+' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
                 println msg
                 println '--------------------------------------------------'        
-                sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + \'' + SLACK_API_URL
+                sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + '\' ' + SLACK_API_URL
 
 
 
