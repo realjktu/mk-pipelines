@@ -11,7 +11,6 @@
  *   OPENSTACK_API_PROJECT_DOMAIN  OpenStack project domain
  *   OPENSTACK_API_PROJECT_ID      OpenStack project do id
  *   OPENSTACK_API_USER_DOMAIN     OpenStack user domain
- *
  *   RETENTION_DAYS                Days to delete stacks after creation
  *   STACK_NAMES_LIST              Jenkins comma separated job names list to inspect outdated stacks
  *
