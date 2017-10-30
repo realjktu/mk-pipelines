@@ -14,6 +14,7 @@
  *
  *   RETENTION_DAYS                Days to delete stacks after creation
  *   STACK_NAMES_LIST              Stacks names comma separated list to inspect outdated stacks
+ *   DRY_RUN			   Do not perform actual cleanup
  *
  *
  */
