@@ -61,8 +61,7 @@ node ('python') {
                     if (DRY_RUN.toBoolean() == true)
                         println "Dry run mode. No real deleting"
                     else
-                        println "DELETE!!!" + stackName
-                        //oooopenstack.deleteHeatStack(openstackCloud, stackName, venv)                    
+                        openstack.deleteHeatStack(openstackCloud, stackName, venv)                    
                 }
             }
             println 'The following stacks were deleted: \n' + outdatedStacks

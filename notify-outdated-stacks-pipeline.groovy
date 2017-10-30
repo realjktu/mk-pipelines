@@ -13,7 +13,7 @@
  *   OPENSTACK_API_USER_DOMAIN     OpenStack user domain
  *
  *   RETENTION_DAYS                Days to delete stacks after creation
- *   JOBS_LIST                     Jenkins comma separated job names list to inspect outdated stacks
+ *   STACK_NAMES_LIST              Jenkins comma separated job names list to inspect outdated stacks
  *
  *
  */
@@ -35,7 +35,7 @@ node ('python') {
                 OPENSTACK_API_PROJECT_ID, OPENSTACK_API_USER_DOMAIN,
                 OPENSTACK_API_VERSION)
             openstack.getKeystoneToken(openstackCloud, venv)
-            def jobNames = JOBS_LIST.tokenize(',')
+            def jobNames = STACK_NAMES_LIST.tokenize(',')
             ArrayList<String> existingStacks = []
             // Get list of stacks
             for (jobName in jobNames){
