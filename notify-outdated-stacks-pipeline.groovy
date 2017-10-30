@@ -58,21 +58,21 @@ node ('python') {
                     println stackName + ' stack is outdated'
                     String user_name = stackName.split('-')[0]                 
                     if (outdatedStacks.containsKey(user_name)){
-                        outdatedStacks.put(user_name, outdatedStacks.get(user_name)+stackName+' Creation time: '+stackInfo.creation_time+'\n')
+                        outdatedStacks.put(user_name, outdatedStacks.get(user_name)+stackName+' Created at: '+stackInfo.creation_time.replace('Z', '').replace('T', ' ')+'\n')
                     } else {
-                        outdatedStacks.put(user_name, stackName+' Creation time: '+stackInfo.creation_time+'\n')
+                        outdatedStacks.put(user_name, stackName+' Created at: '+stackInfo.creation_time.replace('Z', '').replace('T', ' ')+'\n')
                     }
                 }
             }
         }
-        stage('Sending emails') {
+        stage('Sending messages') {
             for (Map.Entry<String, String> entry : outdatedStacks.entrySet()) {
                 String user_name = entry.getKey();
                 String stacks = entry.getValue();
-                String msg = "Hi @" + user_name + "! Please consider to delete the following stacks: \n" + stacks
+                String msg = "Hi @" + user_name + "! Please consider to delete the following "+OPENSTACK_API_PROJECT+" stacks: \n" + stacks
                 println msg
                 println '--------------------------------------------------'        
-                sh 'curl -X POST -H \'Content-type: application/json\' --data \'{"text":"'+msg+'"}\' https://hooks.slack.com/services/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'
+                sh 'curl -X POST -H \'Content-type: application/json\' --data \'{"text":"'+msg+'"}\' '+SLACK_API_URL
 
 
 
