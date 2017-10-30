@@ -22,9 +22,24 @@
 
 openstack = new com.mirantis.mk.Openstack()
 import java.text.SimpleDateFormat
+import groovyx.net.http.HTTPBuilder
+import static groovyx.net.http.ContentType.URLENC
 
 node ('python') {
     try {
+        def http = new HTTPBuilder( 'https://hooks.slack.com' )
+        def jsonBody = [:]
+        jsonBody.put("text", "test data")
+        scibase.request(Method.POST, ContentType.JSON){ req ->
+             uri.path = "/services/T7QQHJQH1/B7QSU2TRQ/C5I4Up4aIGInVK20ndr1ycVd"
+             uri.query = [format:'json']
+             body = jsonBody
+             response.success = { resp, json ->
+                   assert resp.status == 200
+                   newItemId = json.id
+                   }
+        }
+
         HashMap<String, String> outdatedStacks = new HashMap<String, String>()
         stage('Looking for outdated stacks') {
             venv = "${env.WORKSPACE}/venv"
