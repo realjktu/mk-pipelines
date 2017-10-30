@@ -72,8 +72,11 @@ node ('python') {
             for (Map.Entry<String, String> entry : outdatedStacks.entrySet()) {
                 String user_name = entry.getKey();
                 String stacks = entry.getValue();
-                println user_name+': '+stacks
-                println '--------------------------------------------------'
+                String msg = "Hi @" + user_name + "! Please consider to delete the following stacks: \n" + stacks
+                println msg
+                println '--------------------------------------------------'        
+                sh 'curl -X POST -H \'Content-type: application/json\' --data \'{"text":"'+msg+'"}\' https://hooks.slack.com/services/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'
+
 
 
             }
