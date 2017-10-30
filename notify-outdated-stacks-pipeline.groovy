@@ -27,7 +27,7 @@ import static groovyx.net.http.ContentType.URLENC
 
 node ('python') {
     try {
-        sh 'curl -X POST -H \'Content-type: application/json\' --data '{"text":"Hello, World!"}' https://hooks.slack.com/services/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'
+        sh 'curl -X POST -H \'Content-type: application/json\' --data \'{"text":"Hello, World!"}\' https://hooks.slack.com/services/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'
 
         HashMap<String, String> outdatedStacks = new HashMap<String, String>()
         stage('Looking for outdated stacks') {
