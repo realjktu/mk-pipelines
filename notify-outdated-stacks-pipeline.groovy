@@ -57,7 +57,7 @@ node ('python') {
                 if (diff > retentionSec){
                     println stackName + ' stack is outdated'
                     String user_name = stackName.split('-')[0]                 
-                    String stackDetails='<'stackInfo.links+'|'+stackName+'> Created at: '+stackInfo.creation_time.replace('Z', '').replace('T', ' ')+'\n'
+                    String stackDetails='<'+stackInfo.links+'|'+stackName+'> Created at: '+stackInfo.creation_time.replace('Z', '').replace('T', ' ')+'\n'
                     if (outdatedStacks.containsKey(user_name)){
                         outdatedStacks.put(user_name, outdatedStacks.get(user_name)+stackDetails)
                     } else {
