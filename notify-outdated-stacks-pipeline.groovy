@@ -22,8 +22,6 @@
 
 openstack = new com.mirantis.mk.Openstack()
 import java.text.SimpleDateFormat
-import groovyx.net.http.HTTPBuilder
-import static groovyx.net.http.ContentType.URLENC
 
 node ('python') {
     try {
