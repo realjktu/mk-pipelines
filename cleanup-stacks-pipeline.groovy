@@ -37,6 +37,7 @@ node ('python') {
             openstack.getKeystoneToken(openstackCloud, venv)
             def jobNames = STACK_NAMES_LIST.tokenize(',')
             ArrayList<String> existingStacks = []
+            String outdatedStacks=""
             // Get list of stacks
             for (jobName in jobNames){
                 existingStacks.addAll(openstack.getStacksForNameContains(openstackCloud, jobName, venv))
@@ -56,6 +57,7 @@ node ('python') {
                 def retentionSec = Integer.parseInt(RETENTION_DAYS) * 86400
                 if (diff > retentionSec){
                     println stackName + ' stack have to be deleted'
+                    outdatedStacks = outdatedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
                     if (DRY_RUN.toBoolean() == true)
                         println "Dry run mode. No real deleting"
                     else
@@ -63,6 +65,7 @@ node ('python') {
                         //oooopenstack.deleteHeatStack(openstackCloud, stackName, venv)                    
                 }
             }
+            println 'The following stacks were deleted: \n' + outdatedStacks
         }
     } catch (Exception e) {
         currentBuild.result = 'FAILURE'
