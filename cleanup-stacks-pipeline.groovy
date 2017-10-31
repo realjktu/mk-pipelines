@@ -35,7 +35,7 @@ node ('python') {
                 BUILD_USER_ID = env.BUILD_USER_ID
             }
         }
-        println env.BUILD_USER_ID
+        println env
         println BUILD_USER_ID
         dddddddddd
 
