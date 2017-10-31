@@ -28,7 +28,7 @@ import java.text.SimpleDateFormat
 
 node ('python') {
     try {
-        def BUILD_USER_ID = "jenkins"
+        def BUILD_USER_ID = 'jenkins'
         wrap([$class: 'BuildUser']) {
             if (env.BUILD_USER_ID) {
                 BUILD_USER_ID = env.BUILD_USER_ID
@@ -47,7 +47,7 @@ node ('python') {
             openstack.getKeystoneToken(openstackCloud, venv)
             def namePatterns = STACK_NAME_PATTERNS_LIST.tokenize(',')
             ArrayList<String> candidateStacksToDelete = []
-            String deletedStacks = ""
+            String deletedStacks = ''
             // Get list of stacks
             for (namePattern in namePatterns){
                 candidateStacksToDelete.addAll(openstack.getStacksForNameContains(openstackCloud, namePattern, venv))
@@ -63,7 +63,7 @@ node ('python') {
                 } catch (Exception e) {
                     common.errorMsg('Cannot get stack info for ' + stackName + ' stack with error: ' + e.getMessage())
                     continue
-                }                
+                }
                 common.infoMsg('Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time)
                 Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).parse(stackInfo.creation_time.trim())
                 long creationTimestamp = (long) creationDate.getTime() / toSeconds
@@ -72,25 +72,27 @@ node ('python') {
                 if (diff > retentionSec){
                     String stackOwner = stackName.split('-')[0]
                     if (SEND_NOTIFICATIONS.toBoolean()){
-                        String stackLink='https://cloud-cz.bud.mirantis.net/project/stacks/stack/'+stackInfo.id                        
+                        String stackLink='https://cloud-cz.bud.mirantis.net/project/stacks/stack/' + stackInfo.id
                         String stackDetails='{"title":"' + stackName + '", "title_link": "' + stackLink + '", "footer": "Created at: ' + stackInfo.creation_time.replace('Z', '').replace('T', ' ') + '"}'
                         if (outdatedStacks.containsKey(stackOwner)){
                             outdatedStacks.put(stackOwner, outdatedStacks.get(stackOwner) + ',' + stackDetails)
                         } else {
                             outdatedStacks.put(stackOwner, stackDetails)
                         }
-                    }else{                        
-                        if (BUILD_USER_ID.compareTo('jenkins') == 0 || BUILD_USER_ID.compareTo(stackOwner) == 0){
+                    }else{
+                        if (BUILD_USER_ID == 'jenkins' || BUILD_USER_ID == stackOwner){
                             common.infoMsg(stackName + ' stack have to be deleted')
                             deletedStacks = deletedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
-                            if (DRY_RUN.toBoolean() == true)
-                                common.infoMsg("Dry run mode. No real deleting")
-                            else
+                            if (DRY_RUN.toBoolean()){
+                                common.infoMsg('Dry run mode. No real deleting')
+                            }
+                            else{
                                 try{
                                     openstack.deleteHeatStack(openstackCloud, stackName, venv)
                                 } catch (Exception e) {
                                     common.errorMsg('Cannot delete stack ' + stackName + ' with error: ' + e.getMessage())
                                 }
+                            }
                         }else{
                             common.infoMsg('Only jenkins user or stack owner can delete stack. Do not delete ' + stackName + ' stack')
                         }
@@ -102,9 +104,9 @@ node ('python') {
         stage('Sending messages') {
             if (SEND_NOTIFICATIONS.toBoolean()){
                 for (Map.Entry<String, String> entry : outdatedStacks.entrySet()) {
-                    String stackOwner = entry.getKey();
-                    String stacks = entry.getValue();
-                    String msg = '{"text": "Hi *' + stackOwner + '*! Please consider to delete the following '+OPENSTACK_API_PROJECT+' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
+                    String stackOwner = entry.getKey()
+                    String stacks = entry.getValue()
+                    String msg = '{"text": "Hi *' + stackOwner + '*! Please consider to delete the following ' + OPENSTACK_API_PROJECT + ' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
                     common.infoMsg(msg)
                     sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + '\' ' + SLACK_API_URL
                 }
