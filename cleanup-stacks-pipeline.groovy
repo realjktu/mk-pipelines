@@ -38,7 +38,7 @@ node ('python') {
             openstack.getKeystoneToken(openstackCloud, venv)
             def namePatterns = STACK_NAME_PATTERNS_LIST.tokenize(',')
             ArrayList<String> candidateStacksToDelete = []
-            String outdatedStacks=""
+            String deletedStacks = ""
             // Get list of stacks
             for (namePattern in namePatterns){
                 candidateStacksToDelete.addAll(openstack.getStacksForNameContains(openstackCloud, namePattern, venv))
@@ -69,7 +69,7 @@ node ('python') {
                         def buildUsername = env.BUILD_USER_ID
                         if (buildUsername.compareTo('jenkins') == 0 || buildUsername.compareTo(stackOwner) == 0){
                             println stackName + ' stack have to be deleted'                        
-                            outdatedStacks = outdatedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
+                            deletedStacks = deletedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
                             if (DRY_RUN.toBoolean() == true)
                                 println "Dry run mode. No real deleting"
                             else
@@ -78,7 +78,7 @@ node ('python') {
                     }
                 }
             }
-            println 'The following stacks were deleted: \n' + outdatedStacks
+            println 'The following stacks were deleted: \n' + deletedStacks
         }
         stage('Sending messages') {
             if (SEND_NOTIFICATIONS.toBoolean()){
