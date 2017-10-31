@@ -59,9 +59,10 @@ node ('python') {
             def stackInfo = null
             for (stackName in candidateStacksToDelete){
                 try{
-                    stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
+                    //stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
+                    stackInfo = openstack.getHeatStackInfo(openstackCloud, 'olegggg', venv)
                 } catch (Exception e) {
-                    common.errorMsg('Cannot delete stack ' + stackName + 'with error: ' + e.getMessage())
+                    common.errorMsg('Cannot get stack info for ' + stackName + ' stack with error: ' + e.getMessage())
                     continue
                 }                
                 common.infoMsg('Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time)
@@ -89,7 +90,7 @@ node ('python') {
                                 try{
                                     ooooooopenstack.deleteHeatStack(openstackCloud, stackName, venv)
                                 } catch (Exception e) {
-                                    common.errorMsg('Cannot delete stack ' + stackName + 'with error: ' + e.getMessage())
+                                    common.errorMsg('Cannot delete stack ' + stackName + ' with error: ' + e.getMessage())
                                 }
                         }else{
                             common.infoMsg('Only jenkins user or stack owner can delete stack. Do not delete ' + stackName + ' stack')
