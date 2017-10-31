@@ -36,7 +36,6 @@ node ('python') {
                 BUILD_USER_ID = env.BUILD_USER_ID
             }
         }
-        println BUILD_USER_ID
         if (!BUILD_USER_ID){
             common.errorMsg('User ID env varibable is not defined. Please use "Build with Parameters" action')
             currentBuild.result = 'FAILURE'
