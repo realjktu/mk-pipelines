@@ -23,7 +23,6 @@
 
 openstack = new com.mirantis.mk.Openstack()
 import java.text.SimpleDateFormat
-
 node ('python') {
     try {
         HashMap<String, String> outdatedStacks = [:]
@@ -56,23 +55,25 @@ node ('python') {
                 def diff = currentTimestamp - creationTimestamp
                 def retentionSec = Integer.parseInt(RETENTION_DAYS) * 86400
                 if (diff > retentionSec){
+                    String stackOwner = stackName.split('-')[0]
                     if (SEND_NOTIFICATIONS.toBoolean()){
-                        String stackLink='https://cloud-cz.bud.mirantis.net/project/stacks/stack/'+stackInfo.id
-                        String user_name = stackName.split('-')[0]                                         
+                        String stackLink='https://cloud-cz.bud.mirantis.net/project/stacks/stack/'+stackInfo.id                        
                         String stackDetails='{"title":"' + stackName + '", "title_link": "' + stackLink + '", "footer": "Created at: ' + stackInfo.creation_time.replace('Z', '').replace('T', ' ') + '"}'
-                        if (outdatedStacks.containsKey(user_name)){
-                            outdatedStacks.put(user_name, outdatedStacks.get(user_name) + ',' + stackDetails)
+                        if (outdatedStacks.containsKey(stackOwner)){
+                            outdatedStacks.put(stackOwner, outdatedStacks.get(stackOwner) + ',' + stackDetails)
                         } else {
-                            outdatedStacks.put(user_name, stackDetails)
+                            outdatedStacks.put(stackOwner, stackDetails)
                         }
-
                     }else{
-                        println stackName + ' stack have to be deleted'
-                        outdatedStacks = outdatedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
-                        if (DRY_RUN.toBoolean() == true)
-                            println "Dry run mode. No real deleting"
-                        else
-                            ooooooopenstack.deleteHeatStack(openstackCloud, stackName, venv)                    
+                        def buildUsername = env.BUILD_USER_ID
+                        if (buildUsername.compareTo('jenkins') == 0 || buildUsername.compareTo(stackOwner) == 0){
+                            println stackName + ' stack have to be deleted'                        
+                            outdatedStacks = outdatedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
+                            if (DRY_RUN.toBoolean() == true)
+                                println "Dry run mode. No real deleting"
+                            else
+                                ooooooopenstack.deleteHeatStack(openstackCloud, stackName, venv)
+                        }
                     }
                 }
             }
@@ -81,9 +82,9 @@ node ('python') {
         stage('Sending messages') {
             if (SEND_NOTIFICATIONS.toBoolean()){
                 for (Map.Entry<String, String> entry : outdatedStacks.entrySet()) {
-                    String user_name = entry.getKey();
+                    String stackOwner = entry.getKey();
                     String stacks = entry.getValue();
-                    String msg = '{"text": "Hi @' + user_name + ' ! Please consider to delete the following '+OPENSTACK_API_PROJECT+' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
+                    String msg = '{"text": "Hi @' + stackOwner + ' ! Please consider to delete the following '+OPENSTACK_API_PROJECT+' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
                     println msg
                     println '--------------------------------------------------'        
                     sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + '\' ' + SLACK_API_URL
