@@ -30,7 +30,8 @@ def horizonStackDetailsURL = 'https://cloud-cz.bud.mirantis.net/project/stacks/s
 
 node ('python') {
     try {
-        println env.BUILD_CAUSE
+        echo sh(returnStdout: true, script: 'env')
+        
         dddddddd
         def BUILD_USER_ID = null
         wrap([$class: 'BuildUser']) {
