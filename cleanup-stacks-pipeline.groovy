@@ -32,12 +32,9 @@ node ('python') {
         def BUILD_USER_ID = 'jenkins'
         wrap([$class: 'BuildUser']) {
             if (env.BUILD_USER_ID) {
-                BUILD_USER_ID = "${env.BUILD_USER_ID}"
+                BUILD_USER_ID = env.BUILD_USER_ID
             }
         }
-        println BUILD_USER_ID
-        dddddddddd
-
         HashMap<String, String> outdatedStacks = [:]
         stage('Looking for stacks to be deleted') {
             venv = "${env.WORKSPACE}/venv"
