@@ -35,6 +35,8 @@ node ('python') {
                 BUILD_USER_ID = env.BUILD_USER_ID
             }
         }
+        println BUILD_USER_ID
+        dddddddddd
 
         HashMap<String, String> outdatedStacks = [:]
         stage('Looking for stacks to be deleted') {
@@ -81,8 +83,7 @@ node ('python') {
                             outdatedStacks.put(stackOwner, stackDetails)
                         }
                     }else{
-                        if (BUILD_USER_ID == 'jenkins' || BUILD_USER_ID == stackOwner){
-                            println "!" + BUILD_USER_ID + "!" +  stackOwner
+                        if (BUILD_USER_ID == 'jenkins' || BUILD_USER_ID == stackOwner){                            
                             common.infoMsg(stackName + ' stack have to be deleted')
                             deletedStacks = deletedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
                             if (DRY_RUN.toBoolean()){
