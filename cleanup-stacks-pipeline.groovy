@@ -23,7 +23,9 @@
 
 
 openstack = new com.mirantis.mk.Openstack()
+common = new com.mirantis.mk.Common()
 import java.text.SimpleDateFormat
+
 node ('python') {
     try {
         def BUILD_USER_ID = "jenkins"
@@ -50,14 +52,19 @@ node ('python') {
             for (namePattern in namePatterns){
                 candidateStacksToDelete.addAll(openstack.getStacksForNameContains(openstackCloud, namePattern, venv))
             }
-            println 'Found ' + candidateStacksToDelete.size() + ' stacks'
+            common.infoMsg('Found ' + candidateStacksToDelete.size() + ' stacks')
             // Check each stack
             def  toSeconds = 1000
             long currentTimestamp = (long) new Date().getTime() / toSeconds
+            def stackInfo = null
             for (stackName in candidateStacksToDelete){
-                def stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
-                //println stackInfo
-                println 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time
+                try{
+                    stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
+                } catch (Exception e) {
+                    common.errorMsg('Cannot delete stack ' + stackName + 'with error: ' + e.getMessage())
+                    continue
+                }                
+                common.infoMsg('Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time)
                 Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).parse(stackInfo.creation_time.trim())
                 long creationTimestamp = (long) creationDate.getTime() / toSeconds
                 def diff = currentTimestamp - creationTimestamp
@@ -74,17 +81,23 @@ node ('python') {
                         }
                     }else{                        
                         if (BUILD_USER_ID.compareTo('jenkins') == 0 || BUILD_USER_ID.compareTo(stackOwner) == 0){
-                            println stackName + ' stack have to be deleted'                        
+                            common.infoMsg(stackName + ' stack have to be deleted')
                             deletedStacks = deletedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
                             if (DRY_RUN.toBoolean() == true)
-                                println "Dry run mode. No real deleting"
+                                common.infoMsg("Dry run mode. No real deleting")
                             else
-                                ooooooopenstack.deleteHeatStack(openstackCloud, stackName, venv)
+                                try{
+                                    ooooooopenstack.deleteHeatStack(openstackCloud, stackName, venv)
+                                } catch (Exception e) {
+                                    common.errorMsg('Cannot delete stack ' + stackName + 'with error: ' + e.getMessage())
+                                }
+                        }else{
+                            common.infoMsg('Only jenkins user or stack owner can delete stack. Do not delete ' + stackName + ' stack')
                         }
                     }
                 }
             }
-            println 'The following stacks were deleted: \n' + deletedStacks
+            common.infoMsg('The following stacks were deleted: \n' + deletedStacks)
         }
         stage('Sending messages') {
             if (SEND_NOTIFICATIONS.toBoolean()){
@@ -92,8 +105,7 @@ node ('python') {
                     String stackOwner = entry.getKey();
                     String stacks = entry.getValue();
                     String msg = '{"text": "Hi *' + stackOwner + '*! Please consider to delete the following '+OPENSTACK_API_PROJECT+' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
-                    println msg
-                    println '--------------------------------------------------'        
+                    common.infoMsg(msg)
                     sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + '\' ' + SLACK_API_URL
                 }
             }
