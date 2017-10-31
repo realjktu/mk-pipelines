@@ -59,8 +59,7 @@ node ('python') {
             def stackInfo = null
             for (stackName in candidateStacksToDelete){
                 try{
-                    //stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
-                    stackInfo = openstack.getHeatStackInfo(openstackCloud, 'olegggg', venv)
+                    stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
                 } catch (Exception e) {
                     common.errorMsg('Cannot get stack info for ' + stackName + ' stack with error: ' + e.getMessage())
                     continue
