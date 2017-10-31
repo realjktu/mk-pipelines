@@ -25,17 +25,29 @@
 openstack = new com.mirantis.mk.Openstack()
 common = new com.mirantis.mk.Common()
 import java.text.SimpleDateFormat
-horizonStackDetailsURL = 'https://cloud-cz.bud.mirantis.net/project/stacks/stack/'
+
+def horizonStackDetailsURL = 'https://cloud-cz.bud.mirantis.net/project/stacks/stack/'
 
 node ('python') {
     try {
-        def BUILD_USER_ID = 'jenkins'
+        def BUILD_USER_ID = null
         wrap([$class: 'BuildUser']) {
             if (env.BUILD_USER_ID) {
                 BUILD_USER_ID = env.BUILD_USER_ID
             }
         }
-        HashMap<String, String> outdatedStacks = [:]
+        if (!BUILD_USER_ID){
+            common.errorMsg('User ID env varibable is not defined. Please use "Build with Parameters" action')
+            currentBuild.result = 'FAILURE'
+            return
+        }
+        if (!OPENSTACK_API_URL || !OPENSTACK_API_CREDENTIALS || !DRY_RUN || !SEND_NOTIFICATIONS || !STACK_NAME_PATTERNS_LIST || !SLACK_API_URL){
+            common.errorMsg('One or more mandatory parameters is not defined')
+            currentBuild.result = 'FAILURE'
+            return
+        }
+
+        def outdatedStacks = [:]
         stage('Looking for stacks to be deleted') {
             venv = "${env.WORKSPACE}/venv"
             openstack.setupOpenstackVirtualenv(venv, OPENSTACK_API_CLIENT)
@@ -46,8 +58,8 @@ node ('python') {
                 OPENSTACK_API_VERSION)
             openstack.getKeystoneToken(openstackCloud, venv)
             def namePatterns = STACK_NAME_PATTERNS_LIST.tokenize(',')
-            ArrayList<String> candidateStacksToDelete = []
-            String deletedStacks = ''
+            def candidateStacksToDelete = []
+            def deletedStacks = ''
             // Get list of stacks
             for (namePattern in namePatterns){
                 candidateStacksToDelete.addAll(openstack.getStacksForNameContains(openstackCloud, namePattern, venv))
@@ -55,7 +67,7 @@ node ('python') {
             common.infoMsg('Found ' + candidateStacksToDelete.size() + ' stacks')
             // Check each stack
             def  toSeconds = 1000
-            long currentTimestamp = (long) new Date().getTime() / toSeconds
+            def currentTimestamp = (long) new Date().getTime() / toSeconds
             def stackInfo = null
             for (stackName in candidateStacksToDelete){
                 try{
@@ -65,22 +77,22 @@ node ('python') {
                     continue
                 }
                 common.infoMsg('Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time)
-                Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).parse(stackInfo.creation_time.trim())
-                long creationTimestamp = (long) creationDate.getTime() / toSeconds
+                def creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).parse(stackInfo.creation_time.trim())
+                def creationTimestamp = (long) creationDate.getTime() / toSeconds
                 def diff = currentTimestamp - creationTimestamp
                 def retentionSec = Integer.parseInt(RETENTION_DAYS) * 86400
                 if (diff > retentionSec){
-                    String stackOwner = stackName.split('-')[0]
+                    def stackOwner = stackName.split('-')[0]
                     if (SEND_NOTIFICATIONS.toBoolean()){
-                        String stackLink = horizonStackDetailsURL + stackInfo.id
-                        String stackDetails = '{"title":"' + stackName + '", "title_link": "' + stackLink + '", "footer": "Created at: ' + stackInfo.creation_time.replace('Z', '').replace('T', ' ') + '"}'
+                        def stackLink = horizonStackDetailsURL + stackInfo.id
+                        def stackDetails = '{"title":"' + stackName + '", "title_link": "' + stackLink + '", "footer": "Created at: ' + stackInfo.creation_time.replace('Z', '').replace('T', ' ') + '"}'
                         if (outdatedStacks.containsKey(stackOwner)){
                             outdatedStacks.put(stackOwner, outdatedStacks.get(stackOwner) + ',' + stackDetails)
                         } else {
                             outdatedStacks.put(stackOwner, stackDetails)
                         }
                     }else{
-                        if (BUILD_USER_ID == 'jenkins' || BUILD_USER_ID == stackOwner){                            
+                        if (BUILD_USER_ID == 'jenkins' || BUILD_USER_ID == stackOwner){
                             common.infoMsg(stackName + ' stack have to be deleted')
                             deletedStacks = deletedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
                             if (DRY_RUN.toBoolean()){
@@ -104,9 +116,9 @@ node ('python') {
         stage('Sending messages') {
             if (SEND_NOTIFICATIONS.toBoolean()){
                 for (Map.Entry<String, String> entry : outdatedStacks.entrySet()) {
-                    String stackOwner = entry.getKey()
-                    String stacks = entry.getValue()
-                    String msg = '{"text": "Hi *' + stackOwner + '*! Please consider to delete the following ' + OPENSTACK_API_PROJECT + ' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
+                    def stackOwner = entry.getKey()
+                    def stacks = entry.getValue()
+                    def msg = '{"text": "Hi *' + stackOwner + '*! Please consider to delete the following ' + OPENSTACK_API_PROJECT + ' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
                     common.infoMsg(msg)
                     sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + '\' ' + SLACK_API_URL
                 }
