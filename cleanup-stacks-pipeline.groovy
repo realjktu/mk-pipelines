@@ -25,6 +25,7 @@
 openstack = new com.mirantis.mk.Openstack()
 common = new com.mirantis.mk.Common()
 import java.text.SimpleDateFormat
+horizonStackDetailsURL = 'https://cloud-cz.bud.mirantis.net/project/stacks/stack/'
 
 node ('python') {
     try {
@@ -72,8 +73,8 @@ node ('python') {
                 if (diff > retentionSec){
                     String stackOwner = stackName.split('-')[0]
                     if (SEND_NOTIFICATIONS.toBoolean()){
-                        String stackLink='https://cloud-cz.bud.mirantis.net/project/stacks/stack/' + stackInfo.id
-                        String stackDetails='{"title":"' + stackName + '", "title_link": "' + stackLink + '", "footer": "Created at: ' + stackInfo.creation_time.replace('Z', '').replace('T', ' ') + '"}'
+                        String stackLink = horizonStackDetailsURL + stackInfo.id
+                        String stackDetails = '{"title":"' + stackName + '", "title_link": "' + stackLink + '", "footer": "Created at: ' + stackInfo.creation_time.replace('Z', '').replace('T', ' ') + '"}'
                         if (outdatedStacks.containsKey(stackOwner)){
                             outdatedStacks.put(stackOwner, outdatedStacks.get(stackOwner) + ',' + stackDetails)
                         } else {
@@ -81,6 +82,7 @@ node ('python') {
                         }
                     }else{
                         if (BUILD_USER_ID == 'jenkins' || BUILD_USER_ID == stackOwner){
+                            println "!" + BUILD_USER_ID + "!" +  stackOwner
                             common.infoMsg(stackName + ' stack have to be deleted')
                             deletedStacks = deletedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
                             if (DRY_RUN.toBoolean()){
