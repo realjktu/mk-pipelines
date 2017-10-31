@@ -14,7 +14,8 @@
  *   RETENTION_DAYS                Days to delete stacks after creation
  *   DRY_RUN                       Do not perform actual cleanup
  *   SEND_NOTIFICATIONS            Send notifications. Do not delete stacks if True.
- *   STACK_NAMES_LIST              Stacks names comma separated list to inspect outdated stacks.
+ *   STACK_NAME_PATTERNS_LIST      Comma separated patterns list of stacks names to be inspected.
+ *   SLACK_API_URL                 Slack API webhook URL to send notifications.
  *
  *
  */
@@ -35,12 +36,12 @@ node ('python') {
                 OPENSTACK_API_PROJECT_ID, OPENSTACK_API_USER_DOMAIN,
                 OPENSTACK_API_VERSION)
             openstack.getKeystoneToken(openstackCloud, venv)
-            def jobNames = STACK_NAMES_LIST.tokenize(',')
+            def namePatterns = STACK_NAME_PATTERNS_LIST.tokenize(',')
             ArrayList<String> candidateStacksToDelete = []
             String outdatedStacks=""
             // Get list of stacks
-            for (jobName in jobNames){
-                candidateStacksToDelete.addAll(openstack.getStacksForNameContains(openstackCloud, jobName, venv))
+            for (namePattern in namePatterns){
+                candidateStacksToDelete.addAll(openstack.getStacksForNameContains(openstackCloud, namePattern, venv))
             }
             println 'Found ' + candidateStacksToDelete.size() + ' stacks'
             // Check each stack
