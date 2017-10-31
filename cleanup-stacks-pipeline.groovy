@@ -13,7 +13,7 @@
  *   OPENSTACK_API_USER_DOMAIN     OpenStack user domain
  *   RETENTION_DAYS                Days to delete stacks after creation
  *   DRY_RUN                       Do not perform actual cleanup
- *   SEND_NOTIFICATIONS            Send notifications. Do not delete stacks if True.
+ *   SEND_NOTIFICATIONS            True = Send notifications and DO NOT DELETE outdated stacks. False = Do not send notifications and DELETE outdated stacks
  *   STACK_NAME_PATTERNS_LIST      Comma separated patterns list of stacks names to be inspected.
  *   SLACK_API_URL                 Slack API webhook URL to send notifications.
  *
@@ -87,7 +87,7 @@ node ('python') {
                                 common.infoMsg("Dry run mode. No real deleting")
                             else
                                 try{
-                                    ooooooopenstack.deleteHeatStack(openstackCloud, stackName, venv)
+                                    openstack.deleteHeatStack(openstackCloud, stackName, venv)
                                 } catch (Exception e) {
                                     common.errorMsg('Cannot delete stack ' + stackName + ' with error: ' + e.getMessage())
                                 }
