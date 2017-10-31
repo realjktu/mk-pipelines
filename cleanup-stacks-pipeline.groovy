@@ -31,12 +31,12 @@ node ('python') {
     try {
         def BUILD_USER_ID = 'jenkins'
         wrap([$class: 'BuildUser']) {
+            println env.BUILD_USER_ID
+            println env.BUILD_USER
             if (env.BUILD_USER_ID) {
                 BUILD_USER_ID = env.BUILD_USER_ID
             }
         }
-        println env.BUILD_USER_ID
-        println env.BUILD_USER
         println BUILD_USER_ID
         dddddddddd
 
