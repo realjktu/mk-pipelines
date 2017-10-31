@@ -1,6 +1,6 @@
 /**
  *
- * Delete stacks by Stack name after retention period
+ * Delete stacks or notify users by Stack name after retention period
  *
  * Expected parameters:
  *   OPENSTACK_API_URL             OpenStack API address
@@ -12,8 +12,9 @@
  *   OPENSTACK_API_PROJECT_ID      OpenStack project do id
  *   OPENSTACK_API_USER_DOMAIN     OpenStack user domain
  *   RETENTION_DAYS                Days to delete stacks after creation
- *   STACK_NAMES_LIST              Stacks names comma separated list to inspect outdated stacks
- *   DRY_RUN			   Do not perform actual cleanup
+ *   DRY_RUN                       Do not perform actual cleanup
+ *   SEND_NOTIFICATIONS            Send notifications. Do not delete stacks if True.
+ *   STACK_NAMES_LIST              Stacks names comma separated list to inspect outdated stacks.
  *
  *
  */
@@ -25,6 +26,7 @@ import java.text.SimpleDateFormat
 
 node ('python') {
     try {
+        HashMap<String, String> outdatedStacks = [:]
         stage('Looking for stacks to be deleted') {
             venv = "${env.WORKSPACE}/venv"
             openstack.setupOpenstackVirtualenv(venv, OPENSTACK_API_CLIENT)
@@ -35,35 +37,58 @@ node ('python') {
                 OPENSTACK_API_VERSION)
             openstack.getKeystoneToken(openstackCloud, venv)
             def jobNames = STACK_NAMES_LIST.tokenize(',')
-            ArrayList<String> existingStacks = []
+            ArrayList<String> candidateStacksToDelete = []
             String outdatedStacks=""
             // Get list of stacks
             for (jobName in jobNames){
-                existingStacks.addAll(openstack.getStacksForNameContains(openstackCloud, jobName, venv))
+                candidateStacksToDelete.addAll(openstack.getStacksForNameContains(openstackCloud, jobName, venv))
             }
-            println 'Found ' + existingStacks.size() + ' stacks'
+            println 'Found ' + candidateStacksToDelete.size() + ' stacks'
             // Check each stack
             def  toSeconds = 1000
             long currentTimestamp = (long) new Date().getTime() / toSeconds
-            for (stackName in existingStacks){
+            for (stackName in candidateStacksToDelete){
                 def stackInfo = openstack.getHeatStackInfo(openstackCloud, stackName, venv)
                 //println stackInfo
                 println 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time
                 Date creationDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).parse(stackInfo.creation_time.trim())
-                //Date creationDate = new Date().parse("yyyy-MM-dd'T'HH:mm:ss'Z'", stackInfo.creation_time)
                 long creationTimestamp = (long) creationDate.getTime() / toSeconds
                 def diff = currentTimestamp - creationTimestamp
                 def retentionSec = Integer.parseInt(RETENTION_DAYS) * 86400
                 if (diff > retentionSec){
-                    println stackName + ' stack have to be deleted'
-                    outdatedStacks = outdatedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
-                    if (DRY_RUN.toBoolean() == true)
-                        println "Dry run mode. No real deleting"
-                    else
-                        openstack.deleteHeatStack(openstackCloud, stackName, venv)                    
+                    if (SEND_NOTIFICATIONS.toBoolean()){
+                        String stackLink='https://cloud-cz.bud.mirantis.net/project/stacks/stack/'+stackInfo.id
+                        String user_name = stackName.split('-')[0]                                         
+                        String stackDetails='{"title":"' + stackName + '", "title_link": "' + stackLink + '", "footer": "Created at: ' + stackInfo.creation_time.replace('Z', '').replace('T', ' ') + '"}'
+                        if (outdatedStacks.containsKey(user_name)){
+                            outdatedStacks.put(user_name, outdatedStacks.get(user_name) + ',' + stackDetails)
+                        } else {
+                            outdatedStacks.put(user_name, stackDetails)
+                        }
+
+                    }else{
+                        println stackName + ' stack have to be deleted'
+                        outdatedStacks = outdatedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
+                        if (DRY_RUN.toBoolean() == true)
+                            println "Dry run mode. No real deleting"
+                        else
+                            ooooooopenstack.deleteHeatStack(openstackCloud, stackName, venv)                    
+                    }
                 }
             }
             println 'The following stacks were deleted: \n' + outdatedStacks
+        }
+        stage('Sending messages') {
+            if (SEND_NOTIFICATIONS.toBoolean()){
+                for (Map.Entry<String, String> entry : outdatedStacks.entrySet()) {
+                    String user_name = entry.getKey();
+                    String stacks = entry.getValue();
+                    String msg = '{"text": "Hi @' + user_name + ' ! Please consider to delete the following '+OPENSTACK_API_PROJECT+' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
+                    println msg
+                    println '--------------------------------------------------'        
+                    sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + '\' ' + SLACK_API_URL
+                }
+            }
         }
     } catch (Exception e) {
         currentBuild.result = 'FAILURE'
