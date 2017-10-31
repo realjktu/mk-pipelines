@@ -31,7 +31,7 @@ def sendSlackMessage(slackUrl, stackOwner, stacksInfo) {
     def msg = '{"text": "Hi *' + stackOwner + '*! Please consider to delete the following ' + OPENSTACK_API_PROJECT + ' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", '+
               '"attachments": [ ' + stacksInfo + ']}'
     common.infoMsg(msg)
-    sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + '\' ' + $slackUrl
+    sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + '\' ' + slackUrl
 }
 
 node ('python') {
