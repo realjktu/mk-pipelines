@@ -26,6 +26,13 @@ openstack = new com.mirantis.mk.Openstack()
 import java.text.SimpleDateFormat
 node ('python') {
     try {
+        def BUILD_USER_ID = "jenkins"
+        wrap([$class: 'BuildUser']) {
+            if (env.BUILD_USER_ID) {
+                BUILD_USER_ID = env.BUILD_USER_ID
+            }
+        }
+
         HashMap<String, String> outdatedStacks = [:]
         stage('Looking for stacks to be deleted') {
             venv = "${env.WORKSPACE}/venv"
@@ -65,9 +72,8 @@ node ('python') {
                         } else {
                             outdatedStacks.put(stackOwner, stackDetails)
                         }
-                    }else{
-                        def buildUsername = env.BUILD_USER_ID
-                        if (buildUsername.compareTo('jenkins') == 0 || buildUsername.compareTo(stackOwner) == 0){
+                    }else{                        
+                        if (BUILD_USER_ID.compareTo('jenkins') == 0 || BUILD_USER_ID.compareTo(stackOwner) == 0){
                             println stackName + ' stack have to be deleted'                        
                             deletedStacks = deletedStacks + 'Stack: ' + stackName + ' Creation time: ' + stackInfo.creation_time + '\n'
                             if (DRY_RUN.toBoolean() == true)
@@ -85,7 +91,7 @@ node ('python') {
                 for (Map.Entry<String, String> entry : outdatedStacks.entrySet()) {
                     String stackOwner = entry.getKey();
                     String stacks = entry.getValue();
-                    String msg = '{"text": "Hi @' + stackOwner + ' ! Please consider to delete the following '+OPENSTACK_API_PROJECT+' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
+                    String msg = '{"text": "Hi *' + stackOwner + '*! Please consider to delete the following '+OPENSTACK_API_PROJECT+' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
                     println msg
                     println '--------------------------------------------------'        
                     sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + '\' ' + SLACK_API_URL
