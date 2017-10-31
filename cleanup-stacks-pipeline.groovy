@@ -21,30 +21,27 @@
  */
 
 
-
 openstack = new com.mirantis.mk.Openstack()
 common = new com.mirantis.mk.Common()
 import java.text.SimpleDateFormat
 
 def horizonStackDetailsURL = 'https://cloud-cz.bud.mirantis.net/project/stacks/stack/'
 
+def sendSlackMessage(slackUrl, stackOwner, stacksInfo) {
+    def msg = '{"text": "Hi *' + stackOwner + '*! Please consider to delete the following ' + OPENSTACK_API_PROJECT + ' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", '+
+              '"attachments": [ ' + stacksInfo + ']}'
+    common.infoMsg(msg)
+    sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + '\' ' + $slackUrl
+}
+
 node ('python') {
     try {
+        // TODO: (oiurchenko) Need to find a way to determine periodic trigger to define correct user.
         def BUILD_USER_ID = 'jenkins'
         wrap([$class: 'BuildUser']) {
             if (env.BUILD_USER_ID) {
                 BUILD_USER_ID = env.BUILD_USER_ID
             }
-        }
-        if (!BUILD_USER_ID){
-            common.errorMsg('User ID env varibable is not defined. Please use "Build with Parameters" action')
-            currentBuild.result = 'FAILURE'
-            return
-        }
-        if (!OPENSTACK_API_URL || !OPENSTACK_API_CREDENTIALS || !DRY_RUN || !SEND_NOTIFICATIONS || !STACK_NAME_PATTERNS_LIST || !SLACK_API_URL){
-            common.errorMsg('One or more mandatory parameters is not defined')
-            currentBuild.result = 'FAILURE'
-            return
         }
 
         def outdatedStacks = [:]
@@ -66,7 +63,7 @@ node ('python') {
             }
             common.infoMsg('Found ' + candidateStacksToDelete.size() + ' stacks')
             // Check each stack
-            def  toSeconds = 1000
+            def toSeconds = 1000
             def currentTimestamp = (long) new Date().getTime() / toSeconds
             def stackInfo = null
             for (stackName in candidateStacksToDelete){
@@ -116,11 +113,7 @@ node ('python') {
         stage('Sending messages') {
             if (SEND_NOTIFICATIONS.toBoolean()){
                 for (Map.Entry<String, String> entry : outdatedStacks.entrySet()) {
-                    def stackOwner = entry.getKey()
-                    def stacks = entry.getValue()
-                    def msg = '{"text": "Hi *' + stackOwner + '*! Please consider to delete the following ' + OPENSTACK_API_PROJECT + ' old (created more than ' + RETENTION_DAYS + ' days ago) stacks:", "attachments": [ ' + stacks + ']}'
-                    common.infoMsg(msg)
-                    sh 'curl -X POST -H \'Content-type: application/json\' --data \'' + msg + '\' ' + SLACK_API_URL
+                    sendSlackMessage(SLACK_API_URL, entry.getKey(), entry.getValue())
                 }
             }
         }
